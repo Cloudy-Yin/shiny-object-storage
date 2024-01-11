@@ -5,6 +5,7 @@ import (
 	"mq_es_cache/go-object-storage/lib/es"
 	"mq_es_cache/go-object-storage/lib/utils"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -16,8 +17,7 @@ func put(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	size := utils.GetSizeFromHeader(r.Header)
-	c, e := storeObject(r.Body, hash, size)
+	c, e := storeObject(r.Body, url.PathEscape(hash))
 	if e != nil {
 		log.Println(e)
 		w.WriteHeader(c)
@@ -29,6 +29,7 @@ func put(w http.ResponseWriter, r *http.Request) {
 	}
 
 	name := strings.Split(r.URL.EscapedPath(), "/")[2]
+	size := utils.GetSizeFromHeader(r.Header)
 	e = es.AddVersion(name, hash, size)
 	if e != nil {
 		log.Println(e)

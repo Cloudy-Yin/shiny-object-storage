@@ -2,19 +2,15 @@ package objects
 
 import (
 	"fmt"
-	"mq_es_cache/go-object-storage/apiServer/heartbeat"
+	"io"
 	"mq_es_cache/go-object-storage/apiServer/locate"
-	"mq_es_cache/go-object-storage/lib/rs"
+	"mq_es_cache/go-object-storage/lib/objectstream"
 )
 
-func GetStream(hash string, size int64) (*rs.RSGetStream, error) {
-	locateInfo := locate.Locate(hash)
-	if len(locateInfo) < rs.DATA_SHARDS {
-		return nil, fmt.Errorf("object %s locate fail, result %v", hash, locateInfo)
+func getStream(object string) (io.Reader, error) {
+	server := locate.Locate(object)
+	if server == "" {
+		return nil, fmt.Errorf("object %s locate fail", object)
 	}
-	dataServers := make([]string, 0)
-	if len(locateInfo) != rs.ALL_SHARDS {
-		dataServers = heartbeat.ChooseRandomDataServers(rs.ALL_SHARDS-len(locateInfo), locateInfo)
-	}
-	return rs.NewRSGetStream(locateInfo, dataServers, hash, size)
+	return objectstream.NewGetStream(server, object)
 }

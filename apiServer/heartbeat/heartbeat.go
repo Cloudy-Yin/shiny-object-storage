@@ -2,6 +2,7 @@ package heartbeat
 
 import (
 	"mq_es_cache/go-object-storage/lib/rabbitmq"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -11,7 +12,7 @@ var dataServers = make(map[string]time.Time)
 var mutex sync.Mutex
 
 func ListenHeartbeat() {
-	q := rabbitmq.New("amqp://admin:admin123@127.0.0.1:5672")
+	q := rabbitmq.New(os.Getenv("RABBITMQ_SERVER"))
 	defer q.Close()
 	q.Bind("apiServers")
 	c := q.Consume()
