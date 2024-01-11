@@ -1,15 +1,21 @@
 package objects
 
 import (
+	"io"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 )
 
 func get(w http.ResponseWriter, r *http.Request) {
-	file := getFile(strings.Split(r.URL.EscapedPath(), "/")[2])
-	if file == "" {
+	f, e := os.Open("/Users/yinhuile/data" + "/objects/" +
+		strings.Split(r.URL.EscapedPath(), "/")[2])
+	if e != nil {
+		log.Println(e)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	sendFile(w, file)
+	defer f.Close()
+	io.Copy(w, f)
 }
